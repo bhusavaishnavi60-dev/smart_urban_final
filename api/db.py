@@ -2,7 +2,8 @@ import json
 import os
 from datetime import datetime
 
-DB_FILE = "/tmp/complaints.json" if os.environ.get("VERCEL") else "complaints.json"
+# Use /tmp for Vercel serverless, local file for development
+DB_FILE = "/tmp/complaints.json"
 
 def load_db():
     """Load database from JSON file"""
