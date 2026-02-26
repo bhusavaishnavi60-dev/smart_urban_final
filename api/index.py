@@ -2,8 +2,13 @@ import os
 from flask import Flask, render_template, request, redirect, session
 from datetime import timedelta
 
-# Import database functions from api package (works on Vercel and local)
-from api.db import get_user, add_user, add_complaint, get_all_complaints, update_complaint_status
+# Support both module import styles:
+# - local/module style: from api.db ...
+# - Vercel file-execution style: from db ...
+try:
+    from api.db import get_user, add_user, add_complaint, get_all_complaints, update_complaint_status
+except ModuleNotFoundError:
+    from db import get_user, add_user, add_complaint, get_all_complaints, update_complaint_status
 
 # Get the base directory - works in both local and Vercel
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
