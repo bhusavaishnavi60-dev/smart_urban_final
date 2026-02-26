@@ -20,6 +20,7 @@ app = Flask(__name__,
             static_folder=STATIC_DIR)
 app.secret_key = os.environ.get("SECRET_KEY", "smarturban_secret")
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+app.config["PROPAGATE_EXCEPTIONS"] = False
 
 # =======================
 # User Login
@@ -27,8 +28,10 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 @app.route("/", methods=["GET","POST"])
 def login():
     if request.method=="POST":
-        name = request.form["name"]
-        mobile = request.form["mobile"]
+        name = request.form.get("name", "").strip()
+        mobile = request.form.get("mobile", "").strip()
+        if not name or not mobile:
+            return "Name and mobile are required.", 400
         user = get_user(name, mobile)
         if user:
             session["name"]=name
@@ -44,8 +47,10 @@ def login():
 @app.route("/register", methods=["GET","POST"])
 def register():
     if request.method=="POST":
-        name = request.form["name"]
-        mobile = request.form["mobile"]
+        name = request.form.get("name", "").strip()
+        mobile = request.form.get("mobile", "").strip()
+        if not name or not mobile:
+            return "Name and mobile are required.", 400
         success = add_user(name, mobile)
         if success:
             return redirect("/")
@@ -62,10 +67,12 @@ def add_complaint_route():
         return redirect("/")
 
     if request.method=="POST":
-        description = request.form["description"]
-        category = request.form["category"]
-        priority = request.form["priority"]
-        location = request.form["location"]
+        description = request.form.get("description", "").strip()
+        category = request.form.get("category", "").strip()
+        priority = request.form.get("priority", "").strip()
+        location = request.form.get("location", "").strip()
+        if not description or not category or not priority or not location:
+            return "All complaint fields are required.", 400
         name = session["name"]
         mobile = session["mobile"]
 
@@ -83,7 +90,9 @@ def add_complaint_route():
             department="Municipal Dept"
             response="Keep area clean. Municipal staff will resolve in 1 day."
 
-        add_complaint(name, mobile, location, description, category, priority, department, "Pending", response)
+        complaint_id = add_complaint(name, mobile, location, description, category, priority, department, "Pending", response)
+        if complaint_id is None:
+            return "Unable to save complaint right now. Please try again.", 503
 
         return render_template("add_complaint.html",
                                msg=f"Complaint submitted! Department: {department}. Response: {response}")
@@ -96,8 +105,14 @@ def add_complaint_route():
 @app.route("/admin", methods=["GET","POST"])
 def admin():
     if request.method=="POST":
-        complaint_id = int(request.form["id"])
-        new_status = request.form["status"]
+        raw_id = request.form.get("id", "").strip()
+        new_status = request.form.get("status", "").strip()
+        try:
+            complaint_id = int(raw_id)
+        except ValueError:
+            return "Invalid complaint id.", 400
+        if not new_status:
+            return "Status is required.", 400
         update_complaint_status(complaint_id, new_status)
     
     complaints = get_all_complaints()
@@ -108,8 +123,10 @@ def feedback():
     if "name" not in session:
         return redirect("/")
     if request.method == "POST":
-        name = request.form["name"]
-        message = request.form["message"]
+        name = request.form.get("name", "").strip()
+        message = request.form.get("message", "").strip()
+        if not name or not message:
+            return "Name and message are required.", 400
         return f"Thank you {name}, your feedback has been submitted!"
     return render_template("feedback.html")
 
@@ -120,6 +137,10 @@ def about():
 @app.route("/contact")
 def contact():
     return render_template("contact.html")
+
+@app.get("/health")
+def health():
+    return {"ok": True, "service": "smart-urban-api"}, 200
 
 # =======================
 # Logout

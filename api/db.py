@@ -9,16 +9,24 @@ DB_FILE = os.path.join(TMP_DIR, "complaints.json")
 
 def load_db():
     """Load database from JSON file"""
-    if os.path.exists(DB_FILE):
-        with open(DB_FILE, "r") as f:
-            return json.load(f)
+    try:
+        if os.path.exists(DB_FILE):
+            with open(DB_FILE, "r") as f:
+                return json.load(f)
+    except Exception:
+        # Corrupted or unreadable file should not crash function startup.
+        pass
     return {"users": [], "complaints": []}
 
 def save_db(data):
     """Save database to JSON file"""
-    os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
-    with open(DB_FILE, "w") as f:
-        json.dump(data, f, indent=2)
+    try:
+        os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
+        with open(DB_FILE, "w") as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception:
+        return False
 
 def init_db():
     """Initialize database with sample user"""
@@ -42,8 +50,7 @@ def add_user(name, mobile):
     if any(u.get("mobile") == mobile for u in data["users"]):
         return False
     data["users"].append({"name": name, "mobile": mobile})
-    save_db(data)
-    return True
+    return save_db(data)
 
 def add_complaint(name, mobile, location, description, category, priority, department, status, response):
     """Add new complaint"""
@@ -61,8 +68,9 @@ def add_complaint(name, mobile, location, description, category, priority, depar
         "response": response
     }
     data["complaints"].append(complaint)
-    save_db(data)
-    return complaint["id"]
+    if save_db(data):
+        return complaint["id"]
+    return None
 
 def get_all_complaints():
     """Get all complaints"""
@@ -75,9 +83,11 @@ def update_complaint_status(complaint_id, new_status):
     for complaint in data["complaints"]:
         if complaint["id"] == complaint_id:
             complaint["status"] = new_status
-            save_db(data)
-            return True
+            return save_db(data)
     return False
 
 # Initialize database on module load
-init_db()
+try:
+    init_db()
+except Exception:
+    pass
