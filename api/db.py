@@ -1,9 +1,11 @@
 import json
 import os
+import tempfile
 from datetime import datetime
 
-# Use /tmp for Vercel serverless, local file for development
-DB_FILE = "/tmp/complaints.json"
+# Use OS temp directory (works on Vercel and local development)
+TMP_DIR = os.environ.get("TMPDIR", tempfile.gettempdir())
+DB_FILE = os.path.join(TMP_DIR, "complaints.json")
 
 def load_db():
     """Load database from JSON file"""
@@ -14,6 +16,7 @@ def load_db():
 
 def save_db(data):
     """Save database to JSON file"""
+    os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
     with open(DB_FILE, "w") as f:
         json.dump(data, f, indent=2)
 

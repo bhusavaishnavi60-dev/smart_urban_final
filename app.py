@@ -12,12 +12,12 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_FILE = "/tmp/complaints.json"
 
 def load_db():
-    if os.path.exists(DB_FILE):
-        try:
+    try:
+        if os.path.exists(DB_FILE):
             with open(DB_FILE, "r") as f:
                 return json.load(f)
-        except:
-            pass
+    except Exception as e:
+        print(f"Error loading DB: {e}")
     return {"users": [], "complaints": []}
 
 def save_db(data):
@@ -29,19 +29,21 @@ def save_db(data):
 
 def init_db():
     data = load_db()
-    if not any(u.get("mobile") == "9876543210" for u in data["users"]):
+    if not any(u.get("mobile") == "9876543210" for u in data.get("users", [])):
+        data["users"] = data.get("users", [])
         data["users"].append({"name": "Alice", "mobile": "9876543210"})
         save_db(data)
 
 def get_user(name, mobile):
     data = load_db()
-    for user in data["users"]:
+    for user in data.get("users", []):
         if user.get("name") == name and user.get("mobile") == mobile:
             return user
     return None
 
 def add_user(name, mobile):
     data = load_db()
+    data["users"] = data.get("users", [])
     if any(u.get("mobile") == mobile for u in data["users"]):
         return False
     data["users"].append({"name": name, "mobile": mobile})
@@ -50,6 +52,7 @@ def add_user(name, mobile):
 
 def add_complaint(name, mobile, location, description, category, priority, department, status, response):
     data = load_db()
+    data["complaints"] = data.get("complaints", [])
     complaint = {
         "id": len(data["complaints"]) + 1,
         "name": name,
@@ -68,11 +71,11 @@ def add_complaint(name, mobile, location, description, category, priority, depar
 
 def get_all_complaints():
     data = load_db()
-    return data["complaints"]
+    return data.get("complaints", [])
 
 def update_complaint_status(complaint_id, new_status):
     data = load_db()
-    for complaint in data["complaints"]:
+    for complaint in data.get("complaints", []):
         if complaint["id"] == complaint_id:
             complaint["status"] = new_status
             save_db(data)
@@ -97,8 +100,8 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 @app.route("/", methods=["GET","POST"])
 def login():
     if request.method=="POST":
-        name = request.form["name"]
-        mobile = request.form["mobile"]
+        name = request.form.get("name", "")
+        mobile = request.form.get("mobile", "")
         user = get_user(name, mobile)
         if user:
             session["name"]=name
@@ -114,8 +117,8 @@ def login():
 @app.route("/register", methods=["GET","POST"])
 def register():
     if request.method=="POST":
-        name = request.form["name"]
-        mobile = request.form["mobile"]
+        name = request.form.get("name", "")
+        mobile = request.form.get("mobile", "")
         success = add_user(name, mobile)
         if success:
             return redirect("/")
@@ -132,10 +135,10 @@ def add_complaint_route():
         return redirect("/")
 
     if request.method=="POST":
-        description = request.form["description"]
-        category = request.form["category"]
-        priority = request.form["priority"]
-        location = request.form["location"]
+        description = request.form.get("description", "")
+        category = request.form.get("category", "")
+        priority = request.form.get("priority", "")
+        location = request.form.get("location", "")
         name = session["name"]
         mobile = session["mobile"]
 
@@ -165,8 +168,8 @@ def add_complaint_route():
 @app.route("/admin", methods=["GET","POST"])
 def admin():
     if request.method=="POST":
-        complaint_id = int(request.form["id"])
-        new_status = request.form["status"]
+        complaint_id = int(request.form.get("id", 0))
+        new_status = request.form.get("status", "")
         update_complaint_status(complaint_id, new_status)
     
     complaints = get_all_complaints()
@@ -177,8 +180,8 @@ def feedback():
     if "name" not in session:
         return redirect("/")
     if request.method == "POST":
-        name = request.form["name"]
-        message = request.form["message"]
+        name = request.form.get("name", "")
+        message = request.form.get("message", "")
         return f"Thank you {name}, your feedback has been submitted!"
     return render_template("feedback.html")
 
