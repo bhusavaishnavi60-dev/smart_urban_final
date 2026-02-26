@@ -3,13 +3,15 @@ import json
 from flask import Flask, render_template, request, redirect, session
 from datetime import timedelta
 
+# Get the directory where this file is located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # =======================
 # JSON Database Helper
 # =======================
 DB_FILE = "/tmp/complaints.json"
 
 def load_db():
-    """Load database from JSON file"""
     if os.path.exists(DB_FILE):
         try:
             with open(DB_FILE, "r") as f:
@@ -19,7 +21,6 @@ def load_db():
     return {"users": [], "complaints": []}
 
 def save_db(data):
-    """Save database to JSON file"""
     try:
         with open(DB_FILE, "w") as f:
             json.dump(data, f, indent=2)
@@ -27,14 +28,12 @@ def save_db(data):
         print(f"Error saving DB: {e}")
 
 def init_db():
-    """Initialize database with sample user"""
     data = load_db()
     if not any(u.get("mobile") == "9876543210" for u in data["users"]):
         data["users"].append({"name": "Alice", "mobile": "9876543210"})
         save_db(data)
 
 def get_user(name, mobile):
-    """Get user by name and mobile"""
     data = load_db()
     for user in data["users"]:
         if user.get("name") == name and user.get("mobile") == mobile:
@@ -42,7 +41,6 @@ def get_user(name, mobile):
     return None
 
 def add_user(name, mobile):
-    """Add new user"""
     data = load_db()
     if any(u.get("mobile") == mobile for u in data["users"]):
         return False
@@ -51,7 +49,6 @@ def add_user(name, mobile):
     return True
 
 def add_complaint(name, mobile, location, description, category, priority, department, status, response):
-    """Add new complaint"""
     data = load_db()
     complaint = {
         "id": len(data["complaints"]) + 1,
@@ -70,12 +67,10 @@ def add_complaint(name, mobile, location, description, category, priority, depar
     return complaint["id"]
 
 def get_all_complaints():
-    """Get all complaints"""
     data = load_db()
     return data["complaints"]
 
 def update_complaint_status(complaint_id, new_status):
-    """Update complaint status"""
     data = load_db()
     for complaint in data["complaints"]:
         if complaint["id"] == complaint_id:
@@ -90,7 +85,9 @@ init_db()
 # =======================
 # Flask App
 # =======================
-app = Flask(__name__)
+app = Flask(__name__, 
+            template_folder=os.path.join(BASE_DIR, 'templates'),
+            static_folder=os.path.join(BASE_DIR, 'static'))
 app.secret_key = os.environ.get("SECRET_KEY", "smarturban_secret")
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 
