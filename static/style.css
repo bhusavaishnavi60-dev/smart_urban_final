@@ -1,0 +1,104 @@
+/* ------------------------------
+   General Body & Background
+--------------------------------*/
+body {
+    background-color: hsl(210, 12%, 94%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ------------------------------
+   Navbar
+--------------------------------*/
+.navbar {
+    margin-bottom: 30px;
+}
+
+.nav-link {
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    color: hsl(317, 54%, 3%) !important;
+}
+
+/* ------------------------------
+   Cards
+--------------------------------*/
+.card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+}
+
+.card-header {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.card-body {
+    font-size: 0.95rem;
+}
+
+/* ------------------------------
+   Tables
+--------------------------------*/
+.table th {
+    background-color: #0d6efd !important;
+    color: white !important;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+/* ------------------------------
+   Buttons
+--------------------------------*/
+.btn-primary {
+    background-color: #f7aae2;
+    border: none;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+}
+
+.btn-success {
+    font-weight: 500;
+}
+
+/* ------------------------------
+   Forms
+--------------------------------*/
+.form-control {
+    border-radius: 8px;
+}
+
+.form-select {
+    border-radius: 8px;
+}
+
+/* ------------------------------
+   Alerts
+--------------------------------*/
+.alert-success {
+    font-size: 1rem;
+    border-radius: 8px;
+}
+
+/* ------------------------------
+   Centering Forms
+--------------------------------*/
+.row.justify-content-center {
+    margin-top: 30px;
+}
+
+/* ------------------------------
+   Footer Text (optional)
+--------------------------------*/
+footer {
+    margin-top: 50px;
+    text-align: center;
+    color: #6c757d;
+    font-size: 0.9rem;
+}

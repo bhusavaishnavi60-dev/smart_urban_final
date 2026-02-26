@@ -1,0 +1,52 @@
+<!-- templates/dashboard.html -->
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-3">Admin Dashboard</h2>
+
+<table class="table table-bordered table-striped">
+  <thead class="table-primary">
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Mobile</th>
+      <th>Location</th> <!-- NEW COLUMN -->
+      <th>Description</th>
+      <th>Category</th>
+      <th>Priority</th>
+      <th>Department</th>
+      <th>Status</th>
+      <th>Response</th>
+      <th>Update Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in complaints %}
+    <tr>
+      <td>{{ row[0] }}</td>
+      <td>{{ row[1] }}</td>
+      <td>{{ row[2] }}</td>
+      <td>{{ row[3] }}</td> <!-- LOCATION -->
+      <td>{{ row[4] }}</td>
+      <td>{{ row[5] }}</td>
+      <td>{{ row[6] }}</td>
+      <td>{{ row[7] }}</td>
+      <td>{{ row[8] }}</td>
+      <td>{{ row[9] }}</td>
+      <td>
+        <form method="post">
+          <input type="hidden" name="id" value="{{ row[0] }}">
+          <select name="status" class="form-select mb-1">
+            <option value="Pending" {% if row[8]=="Pending" %}selected{% endif %}>Pending</option>
+            <option value="In Progress" {% if row[8]=="In Progress" %}selected{% endif %}>In Progress</option>
+            <option value="Resolved" {% if row[8]=="Resolved" %}selected{% endif %}>Resolved</option>
+          </select>
+          <input type="submit" class="btn btn-sm btn-success" value="Update">
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
+
